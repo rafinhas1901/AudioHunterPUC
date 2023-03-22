@@ -4,7 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var screen: ActivityMainBinding // Cria uma variável da nossa tela
+    private lateinit var screen: ActivityMainBinding// Cria uma variável da nossa tela
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
