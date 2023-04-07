@@ -2,6 +2,7 @@ package com.example.audiohunter
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.example.audiohunter.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private lateinit var screen: ActivityMainBinding// Cria uma variável da nossa tela
