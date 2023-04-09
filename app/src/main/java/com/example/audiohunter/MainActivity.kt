@@ -43,8 +43,7 @@ class MainActivity : AppCompatActivity() {
             //    ActivityCompat#requestPermissions
             ActivityCompat.requestPermissions(this,
                 arrayOf(Manifest.permission.RECORD_AUDIO),
-                1);
-            return
+                1)
         }
 
             // Inicia o AudioCaptureThread
