@@ -1,6 +1,7 @@
 package com.example.audiohunter
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioRecord
@@ -11,8 +12,11 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.audiohunter.databinding.ActivityMainBinding
+import com.example.audiohunter.utils.AudioCaptureService
 import com.example.audiohunter.utils.AudioHunterService
 import java.lang.Math.log10
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 import kotlin.math.roundToInt
 
 class MainActivity : AppCompatActivity() {
@@ -22,32 +26,55 @@ class MainActivity : AppCompatActivity() {
     private val SAMPLE_RATE = 44100
     private val CHANNEL_CONFIG = android.media.AudioFormat.CHANNEL_IN_MONO
     private val AUDIO_FORMAT = android.media.AudioFormat.ENCODING_PCM_16BIT
+    private var isRunning = true
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         screen = ActivityMainBinding.inflate(layoutInflater) // Transforma XML em KT
         setContentView(screen.root) // Coloca na tela
-
-        screen.tvSoundPressureLevel.text = "${String.format("%.2f", calculateSPL())} dB"
-//        val recordAudio = Intent(this, AudioHunterService::class.java) // Inicio o servico de captura de audio (audio capturado a cada 10s)
-//        startService(recordAudio)
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            return
+        } else {
+            // Inicia o AudioCaptureThread
+            val audioCaptureService = AudioCaptureService()
+            audioCaptureService.start()
+            Log.d("AH_DEBUG", audioCaptureService.db.toString())
+            Thread {
+                while (isRunning) {
+                    runOnUiThread {
+                        screen.tvSoundPressureLevel.text = "${String.format("%.2f", audioCaptureService.db)} dB"
+                    }
+                    Thread.sleep(1000) // Espera 1 segundo antes de verificar novamente
+                }
+            }.start()
+        }
     }
 
-
-    override fun onRestart() {
-        super.onRestart()
-        val decibel = calculateSPL().roundToInt().toString()
-        Log.d("ON_RESTART", decibel)
-        screen.tvSoundPressureLevel.text = "${String.format("%.2f", calculateSPL())} dB"
+    override fun onDestroy() {
+        super.onDestroy()
+        isRunning = false
     }
-
-    override fun onResume() {
-        super.onResume()
-        val decibel = calculateSPL().roundToInt().toString()
-        Log.d("ON_RESUME", decibel)
-        screen.tvSoundPressureLevel.text = "${String.format("%.2f", calculateSPL())} dB"
-    }
+//    override fun onRestart() {
+//        super.onRestart()
+//        val decibel = calculateSPL().roundToInt().toString()
+//        Log.d("ON_RESTART", decibel)
+//        screen.tvSoundPressureLevel.text = "${String.format("%.2f", calculateSPL())} dB"
+//    }
+//
+//    override fun onResume() {
+//        super.onResume()
+//        val decibel = calculateSPL().roundToInt().toString()
+//        Log.d("ON_RESUME", decibel)
+//        screen.tvSoundPressureLevel.text = "${String.format("%.2f", calculateSPL())} dB"
+//    }
     private fun calculateSPL(): Double {
         // Configura a gravação de áudio
 
