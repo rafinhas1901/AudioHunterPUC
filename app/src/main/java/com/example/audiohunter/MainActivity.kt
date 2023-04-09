@@ -41,8 +41,12 @@ class MainActivity : AppCompatActivity() {
         ) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
+            ActivityCompat.requestPermissions(this,
+                arrayOf(Manifest.permission.RECORD_AUDIO),
+                1);
             return
-        } else {
+        }
+
             // Inicia o AudioCaptureThread
             val audioCaptureService = AudioCaptureService()
             audioCaptureService.start()
@@ -55,7 +59,7 @@ class MainActivity : AppCompatActivity() {
                     Thread.sleep(1000) // Espera 1 segundo antes de verificar novamente
                 }
             }.start()
-        }
+
     }
 
     override fun onDestroy() {
