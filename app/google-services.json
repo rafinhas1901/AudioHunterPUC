@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "279335173668",
+    "project_id": "audio-hunter",
+    "storage_bucket": "audio-hunter.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:279335173668:android:063ce60bc56238768e22b1",
+        "android_client_info": {
+          "package_name": "com.example.audiohunter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "279335173668-7ea8tlkmg3r5u8cqtv3ccnukcuf4bd1s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVFh8skTwYrz-zl0diA9EWVEy_skC5Sn4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "279335173668-7ea8tlkmg3r5u8cqtv3ccnukcuf4bd1s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

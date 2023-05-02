@@ -5,20 +5,25 @@ import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.location.Location
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.audiohunter.databinding.ActivityMainBinding
 import com.example.audiohunter.utils.AudioCaptureService
+import com.google.android.gms.location.LocationServices
+import com.google.firebase.firestore.FirebaseFirestore
 
 //"val" é constante, "var" é variavel
     const val CHANNEL_ID = "channelID"
@@ -35,6 +40,40 @@ class MainActivity : AppCompatActivity() {
 
         screen = ActivityMainBinding.inflate(layoutInflater) // Transforma XML em KT
         setContentView(screen.root) // Coloca na tela
+        fun sendLocation() {
+            // Obter a localização atual do dispositivo
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+            fusedLocationClient.lastLocation
+                .addOnSuccessListener { location: Location? ->
+                    if (location != null) {
+                        // Enviar a localização para o Firestore
+                        val db = FirebaseFirestore.getInstance()
+                        val docRef = db.collection("warnings").document()
+                        val locationData = hashMapOf(
+                            "latitude" to location.latitude,
+                            "longitude" to location.longitude
+                        )
+                        docRef.set(locationData)
+                            .addOnSuccessListener {
+                                Log.d(TAG, "Localização enviada com sucesso!")
+                            }
+                            .addOnFailureListener {
+                                Log.e(TAG, "Erro ao enviar localização", it)
+                            }
+                    } else {
+                        Log.e(TAG, "Localização não encontrada")
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Erro ao obter localização", e)
+                }
+        }
+        var panic_button: Button = findViewById(R.id.panic_button)
+
+        panic_button = findViewById(R.id.panic_button)
+        panic_button.setOnClickListener {
+            sendLocation()
+        }
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.RECORD_AUDIO
@@ -54,7 +93,7 @@ class MainActivity : AppCompatActivity() {
             Thread {
                 while (isRunning) {
                     runOnUiThread {
-                        if (audioCaptureService.db > 10.5)
+                        if (audioCaptureService.db > 80.0)
                         {
                             createNotification()
                             val notification = NotificationCompat.Builder(this, CHANNEL_ID)
