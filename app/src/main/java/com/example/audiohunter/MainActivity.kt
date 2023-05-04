@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var screen: ActivityMainBinding // Cria uma variável da nossa tela
     private var isRunning = true
     // Lista de permissões a serem solicitadas
+    private var dbValues = doubleArrayOf()
     private val PERMISSIONS = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.RECORD_AUDIO
@@ -70,6 +71,9 @@ class MainActivity : AppCompatActivity() {
                                 .setVibrate(longArrayOf(1000, 1000))
                                 .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
                                 .build()
+                            dbValues += (String.format("%.2f", audioCaptureService.db)).toDouble()
+                            sendDbAverage()
+
                             val notificationManager = NotificationManagerCompat.from(this)
                             notificationManager.notify(NOTIFICATION_ID, notification)
                             screen.tvSoundPressureLevel.setTextColor(resources.getColor(R.color.puc_yellow))
@@ -89,6 +93,30 @@ class MainActivity : AppCompatActivity() {
             // Solicita as permissões
             screen.tvSoundPressureLevel.text = "Libere as permissões nas configurações"
             requestPermissions(PERMISSIONS, 0)
+        }
+    }
+
+    fun calculateAverage(): Double {
+        var average = 0.0
+        for (i in dbValues) {
+            average += i
+        }
+        return (average/dbValues.size)
+    }
+    fun sendDbAverage() {
+        if (dbValues.size >= 6) {
+            val db = FirebaseFirestore.getInstance()
+            val docRef = db.collection("sound_captures").document()
+            val locationData = hashMapOf(
+                "dbAverage" to (String.format("%.2f", calculateAverage())).toDouble()
+            )
+            docRef.set(locationData)
+                .addOnSuccessListener {
+                    Log.d("TESTE_AG", "Media DB enviada com sucesso!")
+                }
+                .addOnFailureListener {
+                    Log.e("TESTE_AG", "Erro ao enviar media DB", it)
+                }
         }
     }
 
