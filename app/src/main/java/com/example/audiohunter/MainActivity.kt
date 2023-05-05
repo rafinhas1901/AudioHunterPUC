@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
             Thread {
                 while (isRunning) {
                     runOnUiThread {
-                        if (audioCaptureService.db > 80.0)
+                        if (audioCaptureService.db > 70.0)
                         {
                             createNotification()
                             val notification = NotificationCompat.Builder(this, CHANNEL_ID)
@@ -71,8 +71,7 @@ class MainActivity : AppCompatActivity() {
                                 .setVibrate(longArrayOf(1000, 1000))
                                 .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
                                 .build()
-                            dbValues += (String.format("%.2f", audioCaptureService.db)).toDouble()
-                            sendDbAverage()
+
 
                             val notificationManager = NotificationManagerCompat.from(this)
                             notificationManager.notify(NOTIFICATION_ID, notification)
@@ -80,10 +79,13 @@ class MainActivity : AppCompatActivity() {
                         } else {
                             screen.tvSoundPressureLevel.setTextColor(resources.getColor(R.color.white))
                         }
+
                         Log.d("AH_SOUND","Valor mic: ${audioCaptureService.db}")
                         Log.d("AH_SOUND","----")
                         screen.tvSoundPressureLevel.text = "${String.format("%.2f", audioCaptureService.db)} dB"
                     }
+                    dbValues += audioCaptureService.db
+                    sendDbAverage()
                     Thread.sleep(2000) // Espera 1 segundo antes de verificar novamente
                 }
             }.start()
@@ -104,15 +106,17 @@ class MainActivity : AppCompatActivity() {
         return (average/dbValues.size)
     }
     fun sendDbAverage() {
-        if (dbValues.size >= 6) {
+        if (dbValues.size >= 10) {
             val db = FirebaseFirestore.getInstance()
             val docRef = db.collection("sound_captures").document()
             val locationData = hashMapOf(
-                "dbAverage" to (String.format("%.2f", calculateAverage())).toDouble()
+                "dbAverage" to calculateAverage()
             )
+            Log.d("TESTE_AG", dbValues.size.toString())
             docRef.set(locationData)
                 .addOnSuccessListener {
                     Log.d("TESTE_AG", "Media DB enviada com sucesso!")
+                    dbValues = doubleArrayOf()
                 }
                 .addOnFailureListener {
                     Log.e("TESTE_AG", "Erro ao enviar media DB", it)
